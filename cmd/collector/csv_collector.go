@@ -46,6 +46,8 @@ func (collector *csvCollector) Collector() error {
 
 func (collector *csvCollector) collectCsvContent(columnNames []string, csvContents [][]string) error {
 
+	var wg = sync.WaitGroup{}
+
 	for i:=0; i<len(csvContents); i++ {
 		row := csvContents[i]
 		pusher := push.New(collector.pushUrl, collector.jobName)
@@ -84,16 +86,16 @@ func (collector *csvCollector) collectCsvContent(columnNames []string, csvConten
 
 		}
 
-		var wg = sync.WaitGroup{}
 		wg.Add(1)
 		go _push(pusher, &wg)
 		log.Info("push: ", row)
-		wg.Wait()
 	}
 
+	wg.Wait()
 
 	return nil
 }
+
 
 func (collector *csvCollector) readCsvFile() ([]string, [][]string, error) {
 	cntb, err := ioutil.ReadFile(collector.csvFiePath)
