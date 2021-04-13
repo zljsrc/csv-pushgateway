@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type csvCollector struct {
@@ -83,8 +84,10 @@ func (collector *csvCollector) collectCsvContent(columnNames []string, csvConten
 
 		}
 
-		pusher.Push()
-		log.Info("push: %v", row)
+		var wg = sync.WaitGroup{}
+		go _push(pusher, &wg)
+		log.Info("push: ", row)
+		wg.Wait()
 	}
 
 
@@ -113,6 +116,13 @@ func (collector *csvCollector) readCsvFile() ([]string, [][]string, error) {
 	log.Info("csvFileLines:", len(rs))
 
 	return columnNames, csvContents, nil
+}
+
+func _push(pusher *push.Pusher, wg *sync.WaitGroup) {
+	pusher.Push()
+
+	wg.Done()
+	return
 }
 
 func in_array(val string, array []string) (exists bool, index int) {

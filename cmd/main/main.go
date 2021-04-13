@@ -3,6 +3,7 @@ package main
 import (
 	"csv-pushgateway/cmd/collector"
 	"flag"
+	"github.com/prometheus/common/log"
 )
 
 
@@ -22,5 +23,8 @@ func main() {
 
 	collector := collector.CsvCollector(*pushUrl, *jobName, *csvPath, *metricsPrefix, labelColumns, collectColumns)
 
-	collector.Collector()
+	err := collector.Collector()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
