@@ -85,6 +85,7 @@ func (collector *csvCollector) collectCsvContent(columnNames []string, csvConten
 		}
 
 		var wg = sync.WaitGroup{}
+		wg.Add(1)
 		go _push(pusher, &wg)
 		log.Info("push: ", row)
 		wg.Wait()
