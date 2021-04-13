@@ -1,5 +1,5 @@
 build: cleanmod goget
-	go build -tags=middleware --ldflags "-extldflags -static" -o run cmd/main/main.go
+	go build -tags=middleware --ldflags "-extldflags -static" -o csv-pushgateway cmd/main/main.go
 
 # 自动提示
 # 要在vim中自动提示，请先运行make autocompletor
