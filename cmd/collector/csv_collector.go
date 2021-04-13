@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/prometheus/common/log"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -83,6 +84,7 @@ func (collector *csvCollector) collectCsvContent(columnNames []string, csvConten
 		}
 
 		pusher.Push()
+		log.Info("push: %v", row)
 	}
 
 
@@ -107,6 +109,8 @@ func (collector *csvCollector) readCsvFile() ([]string, [][]string, error) {
 	columnNames := rs[0]
 	contents := rs[1:]
 	csvContents := contents
+
+	log.Info("csvFileLines:", len(rs))
 
 	return columnNames, csvContents, nil
 }

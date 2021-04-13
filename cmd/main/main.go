@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"csv-pushgateway/cmd/collector"
+	"flag"
 )
 
 

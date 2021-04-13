@@ -15,6 +15,7 @@ goget:
 	go env -w GO111MODULE=on
 	go env | grep GOPROXY
 	go get -u github.com/prometheus/client_golang@v1.9.0
+	go get -u github.com/prometheus/common@v0.15.0
 	go mod tidy
 
 
