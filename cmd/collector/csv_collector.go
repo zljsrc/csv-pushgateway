@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-type csvCollector struct {
+type cvsCollector struct {
 	pushUrl string
 	jobName string
 	csvFiePath string
@@ -22,8 +22,8 @@ type csvCollector struct {
 	collectColumns []string
 }
 
-func CsvCollector(pushUrl string, jobName string, csvFiePath string, metricsPrefix string, labelCollumns []string, collectColumns []string) *csvCollector {
-	return &csvCollector{
+func CsvCollector(pushUrl string, jobName string, csvFiePath string, metricsPrefix string, labelCollumns []string, collectColumns []string) *cvsCollector {
+	return &cvsCollector{
 		pushUrl: pushUrl,
 		jobName: jobName,
 		csvFiePath: csvFiePath,
@@ -33,18 +33,33 @@ func CsvCollector(pushUrl string, jobName string, csvFiePath string, metricsPref
 	}
 }
 
-func (collector *csvCollector) Collector() error {
-	columnNames, csvContents, err := collector.readCsvFile()
+func (collector *cvsCollector) Collector() error {
+	columnNames, csvContents, err := collector.readCvsFile()
 	if err != nil {
 		return err
 	}
 
 	err = collector.collectCsvContent(columnNames, csvContents)
-
 	return err
+
+	for start:=0; start<len(csvContents)-1; {
+		end := start + 1000
+		if end > len(csvContents)-1 {
+			end = len(csvContents)-1
+		}
+		collectContent := csvContents[start:end]
+		start = end
+
+		err = collector.collectCsvContent(columnNames, collectContent)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return nil
 }
 
-func (collector *csvCollector) collectCsvContent(columnNames []string, csvContents [][]string) error {
+func (collector *cvsCollector) collectCsvContent(columnNames []string, csvContents [][]string) error {
 
 	pusher := push.New(collector.pushUrl, collector.jobName)
 
@@ -83,25 +98,22 @@ func (collector *csvCollector) collectCsvContent(columnNames []string, csvConten
 				})
 				gauge.Set(metics_value)
 				pusher.Collector(gauge)
+				//log.Info("collect: ", column, " ", metics_value)
+			} else {
+				log.Info("ignore: ", column)
 			}
-			log.Info("collect: ", row)
 
 		}
 
 	}
 
 	err := pusher.Push()
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		log.Info("done")
-	}
 
-	return nil
+	return err
 }
 
 
-func (collector *csvCollector) readCsvFile() ([]string, [][]string, error) {
+func (collector *cvsCollector) readCvsFile() ([]string, [][]string, error) {
 	cntb, err := ioutil.ReadFile(collector.csvFiePath)
 
 	if err != nil {
