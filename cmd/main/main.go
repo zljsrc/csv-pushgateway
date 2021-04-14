@@ -17,7 +17,7 @@ var (
 func main() {
 	flag.Parse()
 
-	labelColumns := []string{"ng_request_domain","ng_request_url_short","ng_ipnet","internal"}
+	labelColumns := []string{"ng_request_domain","ng_request_url_short","ng_ipnet","internal","app","module","function","master"}
 	collectColumns := []string{"count_all","ipv6_all","error_all","error_4xx","error_5xx","le10ms","le25ms","le50ms","le70ms","le100ms","le200ms","le300ms","le400ms","le500ms","le700ms","le1000ms","le1500ms","le2000ms","le3000ms","avg_request_time","median_request_time","p95_request_time","p99_request_time","sum_body_bytes"}
 
 
