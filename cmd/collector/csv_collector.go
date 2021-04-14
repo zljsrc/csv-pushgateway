@@ -46,16 +46,17 @@ func (collector *csvCollector) Collector() error {
 
 func (collector *csvCollector) collectCsvContent(columnNames []string, csvContents [][]string) error {
 
-	var wg = sync.WaitGroup{}
+	pusher := push.New(collector.pushUrl, collector.jobName)
 
 	for i:=0; i<len(csvContents); i++ {
 		row := csvContents[i]
-		pusher := push.New(collector.pushUrl, collector.jobName)
 
+		lables := prometheus.Labels{}
 		for j:=0; j<len(collector.labelCollumns); j++ {
 			exists, index := in_array(collector.labelCollumns[j], columnNames)
 			if exists {
-				pusher.Grouping(collector.labelCollumns[j], row[index])
+				//pusher.Grouping(collector.labelCollumns[j], row[index])
+				lables[collector.labelCollumns[j]] = row[index]
 			}
 		}
 
@@ -78,20 +79,23 @@ func (collector *csvCollector) collectCsvContent(columnNames []string, csvConten
 				}
 
 				gauge := prometheus.NewGauge(prometheus.GaugeOpts{
-					Name: metrics_name,Help:metrics_name,
+					Name: metrics_name,Help:metrics_name,ConstLabels:lables,
 				})
 				gauge.Set(metics_value)
 				pusher.Collector(gauge)
 			}
+			log.Info("collect: ", row)
 
 		}
 
-		wg.Add(1)
-		go _push(pusher, &wg)
-		log.Info("push: ", row)
 	}
 
-	wg.Wait()
+	err := pusher.Push()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Info("done")
+	}
 
 	return nil
 }
@@ -122,7 +126,12 @@ func (collector *csvCollector) readCsvFile() ([]string, [][]string, error) {
 }
 
 func _push(pusher *push.Pusher, wg *sync.WaitGroup) {
-	pusher.Push()
+	err := pusher.Push()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Info("done")
+	}
 
 	wg.Done()
 	return
